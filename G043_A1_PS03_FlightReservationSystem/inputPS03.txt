@@ -1,0 +1,10 @@
+Add a Flight: New York to Paris
+Add a Flight: London to Tokyo
+Add a Flight: San Francisco to Sydney
+Mark Booked: New York to Paris
+Flight Status:
+Mark Available: New York to Paris
+Remove Flight: San Francisco to Sydney
+Search Flight: London
+Add a Flight: Tokyo to Bangkok
+Search Flight: 1002
