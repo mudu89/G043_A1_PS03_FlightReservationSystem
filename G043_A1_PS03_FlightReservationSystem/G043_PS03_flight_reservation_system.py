@@ -1,3 +1,6 @@
+
+fl_reser_sys_list = []
+
 def initiateFlightSystem(read_input_file):
     """
      Reads the input file and creates a flight reservation system and all associated data structures,
