@@ -73,17 +73,38 @@ class FlightReservation:
         Input: Flight string or Flight-ID.
         Output: "UNBOOKED:<Unique Flight-ID> - <Flight String>"
         """
-        write_output(f"UNBOOKED:{flight_string or flight_id}")
+        current = self.head
+        while current:
+            if current.flight_id == flight_id or current.flight_string == flight_string.strip():
+                if current.status == "Booked":
+                    current.status = "Available"
+                    self.write_output(f"UNBOOKED:{current.flight_id}-{current.flight_string}")
+                    return
+                else:
+                    self.write_output(f"ERROR: Flight is already available: {current.flight_id}-{current.flight_string}")
+                    return
+            current = current.next
 
+        self.write_output("ERROR: Flight not found for unbooking.")
+        
     def statusFlight(self):
         """
         Displays the status of all flights (Booked and Available).
         Input: None.
         Output: "FLIGHT STATUS:\n--------------------------------------------------\n<Flight-ID> -<Flight String> - <Status (Booked/Available)>"
         """
-        write_output("FLIGHT STATUS:")
+        if not self.head:
+            self.write_output("FLIGHT STATUS:\n--------------------------------------------------\nNo flights available.")
+            return
 
-
+        result = ["FLIGHT STATUS:\n--------------------------------------------------"]
+        current = self.head
+        while current:
+            result.append(f"{current.flight_id} {current.flight_string} - {current.status}")
+            current = current.next
+        result.append("--------------------------------------------------")
+        self.write_output("\n".join(result))
+        
 def initiateFlightSystem(read_input_file):
     """
     Reads the input file and creates a flight reservation system and all associated data structures,
