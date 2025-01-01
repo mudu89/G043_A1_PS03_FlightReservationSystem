@@ -57,7 +57,21 @@ class FlightReservation:
         Input: Flight string or Flight-ID.
         Output: "SEARCHED:<Search String> \n----------------------------------------\n<Flight-ID> - <Flight String>"
         """
-        write_output(f"SEARCHED:{search_string}")
+         if not search_string:
+            self.write_output("ERROR: No search string provided.\n----------------------------------------\nNo matching flights found.\n----------------------------------------\n")
+            return
+
+        current = self.head
+        result = []
+        while current:
+            if search_string.lower() in current.flight_id.lower() or search_string.lower() in current.flight_description.lower():
+                result.append(f"{current.flight_id}-{current.flight_description}")
+            current = current.next
+
+        if result:
+             self.write_output(f"SEARCHED:{search_string}\n----------------------------------------\n" + "\n".join(result) + "\n----------------------------------------\n")
+        else:
+            self.write_output(f"SEARCHED:{search_string}\n----------------------------------------\nNo matching flights found."+ "\n----------------------------------------\n")
 
     def bookFlight(self, flight_string="", flight_id=""):
         """
@@ -65,7 +79,21 @@ class FlightReservation:
         Input: Flight string or Flight-ID.
         Output: "BOOKED:<Unique Flight-ID> - <Flight String>"
         """
-        write_output(f"BOOKED:{flight_string or flight_id}")
+        if not flight_string and not flight_id:
+            self.write_output("ERROR: No flight identifier provided.")
+            return
+
+        current = self.head
+        while current:
+            if current.flight_id == flight_id or (flight_string and flight_string.lower() in current.flight_description.lower()):
+                if current.is_booked: 
+                    self.write_output(f"ERROR: Flight is already booked: {current.flight_id} - {current.flight_description}")
+                else:
+                    current.is_booked = True
+                    self.write_output(f"BOOKED:{current.flight_id} - {current.flight_description}")
+                return
+            current = current.next
+        self.write_output(f"ERROR: Flight not found for booking.")
 
     def unbookFlight(self, flight_string="", flight_id=""):
         """
