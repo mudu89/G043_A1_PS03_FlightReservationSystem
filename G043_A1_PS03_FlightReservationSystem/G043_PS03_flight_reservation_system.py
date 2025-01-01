@@ -29,10 +29,10 @@ class FlightReservation:
         Input: Flight string (e.g., flight destination, details).
         Output: "ADDED:<Unique Flight-ID> - <Flight String>"
         """
-        is_booked = "AVAILABLE"
+        status = "AVAILABLE"
         flight_id = f"FL{self.flight_counter}"
         next = None
-        newflight = Flight(flight_id, flight_string.strip(), is_booked, next)
+        newflight = Flight(flight_id, flight_string.strip(), status, next)
         self.flight_counter = self.flight_counter + 1
         if not self.head:
             self.head = newflight
@@ -53,8 +53,7 @@ class FlightReservation:
         current = self.head
 
         while current:
-            if (flight_id and current.flight_id == flight_id) or (
-                    flight_string and flight_string in current.flight_description):
+            if current.flight_id == flight_id or current.flight_description == flight_string.strip():
                 if prev:
                     prev.next = current.next
                 else:
@@ -83,14 +82,14 @@ class FlightReservation:
         current = self.head
         result = []
         while current:
-            if search_string.lower() in current.flight_id.lower() or search_string.lower() in current.flight_description.lower():
+            if search_string.lower().strip() in current.flight_id.lower() or search_string.lower().strip() in current.flight_description.lower():
                 result.append(f"{current.flight_id}-{current.flight_description}")
             current = current.next
 
         if result:
-            write_output(f"SEARCHED:{search_string}\n----------------------------------------\n" + "\n".join(result) + "\n----------------------------------------\n")
+            write_output(f"SEARCHED:{search_string.strip()}\n----------------------------------------\n" + "".join(result) + "\n----------------------------------------")
         else:
-            write_output(f"SEARCHED:{search_string}\n----------------------------------------\nNo matching flights found."+ "\n----------------------------------------\n")
+            write_output(f"SEARCHED:{search_string}\n----------------------------------------\nNo matching flights found."+ "\n----------------------------------------")
 
     def bookFlight(self, flight_string="", flight_id=""):
         """
@@ -104,11 +103,11 @@ class FlightReservation:
 
         current = self.head
         while current:
-            if current.flight_id == flight_id or (flight_string and flight_string.lower() in current.flight_description.lower()):
-                if current.is_booked: 
+            if current.flight_id == flight_id or current.flight_description == flight_string.strip():
+                if current.status == "Booked":
                     write_output(f"ERROR: Flight is already booked: {current.flight_id} - {current.flight_description}")
                 else:
-                    current.is_booked = True
+                    current.status = "Booked"
                     write_output(f"BOOKED:{current.flight_id} - {current.flight_description}")
                 return
             current = current.next
@@ -180,7 +179,7 @@ def initiateFlightSystem(read_input_file):
             elif re.match(r"(?i)^flight.*status$", operation):
                 flight_reservation_system.statusFlight()
             elif re.match(r"(?i)^search.*flight$", operation):
-                flight_reservation_system.searchFlight(flight_string or flight_id)
+                flight_reservation_system.searchFlight(flights_data)
 
 
 if __name__ == "__main__":
