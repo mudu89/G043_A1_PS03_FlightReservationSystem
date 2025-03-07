@@ -53,12 +53,15 @@ class BloomFilter:
 
     def _hash2(self, url: str) -> int:
         """
-        Second hash function using SHA-256.
+        Second hash function using the DJB2 algorithm.
         
         :param url: The URL to hash.
         :return: The hashed value mapped to the bit array size.
         """
-        return int(hashlib.sha256(url.encode()).hexdigest(), 16) % self.size
+        hash_value = 5381  # Initial value for DJB2
+        for char in url:
+            hash_value = ((hash_value << 5) + hash_value) + ord(char)  # hash * 33 + char
+        return hash_value % self.bloom.size
 
     def _hash3(self, url: str) -> int:
         """
