@@ -50,12 +50,13 @@ class BloomFilterCaching:
 
     def _hash1(self, url: str) -> int:
         """
-        First hash function using MurmurHash.
-        
-        :param url: The URL to hash.
-        :return: The hashed value mapped to the bit array size.
+        First hash function using a simple polynomial rolling hash.
         """
-        return mmh3.hash(url, 42) % self.bloom.size  # 42 is a random seed
+        hash_value = 0
+        prime = 31  # A prime number commonly used in hashing
+        for char in url:
+            hash_value = (hash_value * prime + ord(char)) % self.bloom.size
+        return hash_value
 
     def _hash2(self, url: str) -> int:
         """
