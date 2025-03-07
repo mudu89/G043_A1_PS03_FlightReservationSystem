@@ -1,7 +1,6 @@
 import pathlib
 import re
 from typing import Optional
-import mmh3  # MurmurHash for fast non-cryptographic hashing
 import hashlib  # For SHA-256 and MD5
 import bitarray  # Efficient bit storage
 
@@ -39,23 +38,17 @@ class BloomFilter:
         self.bit_array = bitarray.bitarray(size)
         self.bit_array.setall(0)
 
-class BloomFilterCaching:
-    def __init__(self, size: int = 1000) -> None:
-        """
-        Initialize the Bloom filter with a given bit array size.
-        
-        :param size: The number of bits in the bit array.
-        """
-        self.bloom = BloomFilter(size=size)
-
     def _hash1(self, url: str) -> int:
         """
         First hash function using a simple polynomial rolling hash.
+        
+        :param url: The URL to hash.
+        :return: The hashed value mapped to the bit array size.
         """
         hash_value = 0
         prime = 31  # A prime number commonly used in hashing
         for char in url:
-            hash_value = (hash_value * prime + ord(char)) % self.bloom.size
+            hash_value = (hash_value * prime + ord(char)) % self.size
         return hash_value
 
     def _hash2(self, url: str) -> int:
@@ -65,7 +58,7 @@ class BloomFilterCaching:
         :param url: The URL to hash.
         :return: The hashed value mapped to the bit array size.
         """
-        return int(hashlib.sha256(url.encode()).hexdigest(), 16) % self.bloom.size
+        return int(hashlib.sha256(url.encode()).hexdigest(), 16) % self.size
 
     def _hash3(self, url: str) -> int:
         """
@@ -74,7 +67,16 @@ class BloomFilterCaching:
         :param url: The URL to hash.
         :return: The hashed value mapped to the bit array size.
         """
-        return int(hashlib.md5(url.encode()).hexdigest(), 16) % self.bloom.size
+        return int(hashlib.md5(url.encode()).hexdigest(), 16) % self.size
+
+class BloomFilterCaching:
+    def __init__(self, size: int = 1000) -> None:
+        """
+        Initialize the Bloom filter with a given bit array size.
+        
+        :param size: The number of bits in the bit array.
+        """
+        self.bloom = BloomFilter(size=size)
 
     def add_url(self, url: str) -> None:
         """
@@ -82,9 +84,8 @@ class BloomFilterCaching:
         
         :param url: The URL to add.
         """
-        self.bloom.bit_array[self._hash1(url)] = 1
-        self.bloom.bit_array[self._hash2(url)] = 1
-        self.bloom.bit_array[self._hash3(url)] = 1
+        for hash_func in [self.bloom._hash1, self.bloom._hash2, self.bloom._hash3]:
+            self.bloom.bit_array[hash_func(url)] = 1
 
         write_output(f"Added: {url.strip()}")
 
@@ -95,13 +96,9 @@ class BloomFilterCaching:
         :param url: The URL to check.
         :return: True if the URL is possibly in the filter, False if definitely not.
         """
-        exists_url =  (self.bloom.bit_array[self._hash1(url)] and 
-                self.bloom.bit_array[self._hash2(url)] and 
-                self.bloom.bit_array[self._hash3(url)])
-        if exists_url:
-            write_output(f"URL Existence Check for {url.strip()}: True")
-        else:
-            write_output(f"URL Existence Check for {url.strip()}: False")
+        exists_url = all(self.bloom.bit_array[hash_func(url)] for hash_func in [self.bloom._hash1, self.bloom._hash2, self.bloom._hash3])
+        
+        write_output(f"URL Existence Check for {url.strip()}: {exists_url}")
 
 def initiateURLCaching(read_input_file: pathlib.Path) -> None:
     """
