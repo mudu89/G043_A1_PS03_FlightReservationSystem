@@ -1,0 +1,5 @@
+ADD https://example.com/page1
+CONTAINS https://example.com/page1
+ADD https://example.com/page2
+CONTAINS https://example.com/page2
+CONTAINS https://example.com/page3
