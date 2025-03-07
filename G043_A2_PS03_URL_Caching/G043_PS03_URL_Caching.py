@@ -1,7 +1,5 @@
 import pathlib
 import re
-from typing import Optional
-import hashlib  # For SHA-256 and MD5
 import bitarray  # Efficient bit storage
 
 def write_output(string: str) -> None:
@@ -61,7 +59,7 @@ class BloomFilter:
         hash_value = 5381  # Initial value for DJB2
         for char in url:
             hash_value = ((hash_value << 5) + hash_value) + ord(char)  # hash * 33 + char
-        return hash_value % self.bloom.size
+        return hash_value % self.size
 
     def _hash3(self, url: str) -> int:
         """
@@ -70,7 +68,10 @@ class BloomFilter:
         :param url: The URL to hash.
         :return: The hashed value mapped to the bit array size.
         """
-        return int(hashlib.md5(url.encode()).hexdigest(), 16) % self.size
+        hash_value = 17
+        for char in url:
+            hash_value ^= (hash_value << 5) + (hash_value >> 2) + ord(char)
+        return hash_value % self.size
 
 class BloomFilterCaching:
     def __init__(self, size: int = 1000) -> None:
@@ -124,9 +125,7 @@ def initiateURLCaching(read_input_file: pathlib.Path) -> None:
     with open(read_input_file, 'r') as url_input:
         for command in url_input:
             operation, url_data = command.split(" ", 1)
-            print(f"Operation: {operation}, URL: {url_data}")
             if re.match(r"(?i)^add*$", operation):
-                print("Adding URL")
                 bloomFilterSystem.add_url(url_data)
             elif re.match(r"(?i)^contains*$", operation):
                 bloomFilterSystem.check_url(url_data)
@@ -134,5 +133,4 @@ def initiateURLCaching(read_input_file: pathlib.Path) -> None:
 if __name__ == "__main__":
     # Define the input file path & Initialize the flight reservation system
     read_input_file = pathlib.Path(__file__).parent / "inputPS03.txt"
-    print(f"Reading input from: {read_input_file}")
     initiateURLCaching(read_input_file)
