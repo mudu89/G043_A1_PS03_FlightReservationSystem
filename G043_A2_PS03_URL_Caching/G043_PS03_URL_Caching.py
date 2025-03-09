@@ -1,6 +1,30 @@
+import math
 import pathlib
 import re
 import bitarray  # Efficient bit storage
+
+size = 0
+
+def calculate_size(n: int, k: int) -> int:
+    """
+    Calculate the size of the Bloom filter bit array given the number of elements and hash functions.
+
+    Args:
+        n (int): The number of elements to store.
+        k (int): The number of hash functions to use.
+
+    Returns:
+        int: The size of the Bloom filter bit array.
+
+    Runtime Analysis:
+        - The function performs a few arithmetic operations, which are O(1).
+    """
+    global size
+    if size != 0:
+        return size
+    # Calculate the optimal size of the Bloom filter bit array
+    size = (k * n) / math.log(2)
+    return math.ceil(size)
 
 def write_output(string: str) -> None:
     """
@@ -26,7 +50,7 @@ def write_output(string: str) -> None:
 
 
 class BloomFilter:
-    def __init__(self, size: int = 1000) -> None:
+    def __init__(self, size: int) -> None:
         """
         Initialize the Bloom filter with a given bit array size.
         
@@ -74,7 +98,7 @@ class BloomFilter:
         return hash_value % self.size
 
 class BloomFilterCaching:
-    def __init__(self, size: int = 1000) -> None:
+    def __init__(self, size: int) -> None:
         """
         Initialize the Bloom filter with a given bit array size.
         
@@ -118,8 +142,15 @@ def initiateURLCaching(read_input_file: pathlib.Path) -> None:
     if not read_input_file.exists():
         raise Exception(f"Input file {read_input_file} does not exist")
     
+    # Calculate the size of the Bloom filter if not provided
+    with open(read_input_file, 'r', encoding='utf-8') as file:
+        content = file.read().lower()
+        url_len = content.count("\nadd ") + content.startswith("add ")
+    
+    size = calculate_size(url_len, k=3)  # Use 3 hash functions for lower false positives
+
     # Initialize the Bloom filter
-    bloomFilterSystem = BloomFilterCaching(size=5000)  # Adjust size for lower false positives
+    bloomFilterSystem = BloomFilterCaching(size=size)  # Initialize the Bloom filter system
 
     # Read commands from the input file and process them
     with open(read_input_file, 'r') as url_input:

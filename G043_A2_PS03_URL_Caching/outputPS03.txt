@@ -1,4 +1,3 @@
-
 Added: https://example.com/page1
 URL Existence Check for https://example.com/page1: True
 Added: https://example.com/page2
